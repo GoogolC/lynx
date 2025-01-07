@@ -2,35 +2,36 @@ package demo
 
 import org.grapheco.lynx.KeyValueStore
 
-import scala.util.{Try, Success, Failure}
-import java.io.File
+object DemoKeyValueStoreApp {
+  def main(args: Array[String]): Unit = {
+    val demoFile = "demo_keyvalue_store.txt"
+    val store = new KeyValueStore(demoFile)
 
-object DemoKeyValueStoreApp extends App {
-  val demoFile = "demo_key_value_store.txt"
+    println("=== Demo: KeyValueStore ===")
 
-  println(s"Using demo file: $demoFile")
+    // 1. Write key-value pairs
+    println("\nWriting key-value pairs...")
+    store.append("user1", "Alice")
+    store.append("user2", "Bob")
 
-  // Write key-value pairs to the file
-  println("\nWriting key-value pairs:")
-  KeyValueStore.writeKeyValue(demoFile, "name", "Lynx") match {
-    case Success(_) => println("Successfully wrote: name -> Lynx")
-    case Failure(ex) => println(s"Failed to write: ${ex.getMessage}")
-  }
+    // 2. Read and display all key-value pairs
+    println("\nReading key-value pairs...")
+    store.read().foreach { case (key, value) =>
+      println(s"$key -> $value")
+    }
 
-  KeyValueStore.writeKeyValue(demoFile, "version", "1.0") match {
-    case Success(_) => println("Successfully wrote: version -> 1.0")
-    case Failure(ex) => println(s"Failed to write: ${ex.getMessage}")
-  }
+    // 3. Cache a query result
+    println("\nCaching a query result...")
+    val query = "MATCH (n) RETURN n LIMIT 10"
+    val result = "[{'name':'Alice'}, {'name':'Bob'}]"
+    store.cacheQueryResult(query, result)
 
-  KeyValueStore.writeKeyValue(demoFile, "author", "Grapheco") match {
-    case Success(_) => println("Successfully wrote: author -> Grapheco")
-    case Failure(ex) => println(s"Failed to write: ${ex.getMessage}")
-  }
-
-  // Read key-value pairs from the file
-  println("\nReading key-value pairs:")
-  KeyValueStore.readKeyValue(demoFile).foreach { case (key, value) =>
-    println(s"$key -> $value")
+    // 4. Retrieve cached query result
+    println("\nRetrieving cached query result...")
+    store.getCachedResult(query) match {
+      case Some(res) => println(s"Cached result for query: $res")
+      case None      => println("No cached result found.")
+    }
   }
 }
 
